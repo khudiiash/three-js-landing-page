@@ -10,80 +10,100 @@ var windowHalfY = window.innerHeight / 2;
 var object;
 
 init();
-animate();
 
 
 function init() {
 
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
 
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-    camera.position.z = 5;
-
-    // scene
-
-    scene = new THREE.Scene();
+    camera.position.z = 15;
     
-
+    
+    scene = new THREE.Scene();
     scene.add( camera );
 
 
     // wall
 
-    var geometry = new THREE.PlaneGeometry( 20, 20, 32 );
-    var material = new THREE.MeshPhongMaterial( {color: 'black', side: THREE.DoubleSide, shininess: 7, roughness: 25} );
+    var geometry = new THREE.PlaneGeometry( 100, 100, 32 );
+    var material = new THREE.MeshPhongMaterial( {color: 'black', side: THREE.DoubleSide, shininess: 12, roughness: 55} );
     var wall = new THREE.Mesh( geometry, material );
-    wall.position.z = -2;
+    wall.position.z = -15;
     scene.add( wall );
 
-    var texture = new THREE.TextureLoader().load( '../objects/textures/marble.jpg' );
-    // manager
-    var mtlLoader = new THREE.MTLLoader();
-    mtlLoader.setBaseUrl( "../objects/" );
-    mtlLoader.setPath(  "../objects/"  );
-    mtlLoader.load( "kissing.mtl", function( materials ) {
-        console.log(materials)
-        materials.preload();
-        var objLoader = new THREE.OBJLoader();
-        objLoader.setMaterials( materials );
-        objLoader.setPath(  "../objects/"  );
+
+    // Instantiate a loader
+var loader = new THREE.GLTFLoader();
+
+// Optional: Provide a DRACOLoader instance to decode compressed mesh data
+var dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath( './scripts/draco/' );
+loader.setDRACOLoader( dracoLoader );
+
+// Load a glTF resource
+loader.load(
+	// resource URL
+	'../objects/3graces_compressed.glb',
+	// called when the resource is loaded
+	function ( statue ) {
+
+		scene.add( statue.scene );
+
+		statue.animations; // Array<THREE.AnimationClip>
+		statue.scene; // THREE.Group
+		statue.scenes; // Array<THREE.Group>
+		statue.cameras; // Array<THREE.Camera>
+        statue.asset; // Object
+        statue.scene.matrixAutoUpdate = false;
+        object = statue.scene;
+        statue.scene.traverse( child => {
+
+            if ( child.material ) {
+                child.material.shininess = 100
+                // child.material.roughness = 100
+                // child.material.emissive = null
+                child.material.metalness = .5
+                child.material.fog = true
+
+            }
         
-        objLoader.load("kissing.obj", function ( object ) {
-            object.traverse( function ( child ) {
-                if ( child.isMesh ) {
-                  
-                    console.log(child.material)
-                    child.material.specular = {r: 0.02, g: 0.02, b: 0.02}
-                    child.material.ambient = null
-                    child.material.shininess = 2;
-                    child.material.map = texture;}
-            } );
-    
-            object.position.y -= 1.8;
-            object.position.x -= .1;
-            object.position.z = -1;
-            object.rotation.y -= 725;
+        } );
+            statue.scene.scale.x = .25
+            statue.scene.scale.y = .25
+            statue.scene.scale.z = .25
+
+            statue.scene.position.y -= 24;
+            statue.scene.position.x += 1;
+            statue.scene.position.z = -8;
             
+            statue.scene.rotation.y += .1;
+
+            statue.scene.rotation.x -= 0;
 
 
-            scene.add(object);
-        }, onProgress, onError );
-    });
-    
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+	},
+	// called when loading has errors
+	function ( error ) {
+
+		console.log( 'An error happened' );
+
+	}
+);
 
 // light
-var ambientLight = new THREE.AmbientLight( 0xcccccc, 0.05, 2000 );
+var ambientLight = new THREE.AmbientLight( 0xcccccc, 0, 2000 );
 scene.add( ambientLight );
 let mouse = {}
-var directionalLight = new THREE.PointLight( 0xffffff, 1, 2000);
+var directionalLight = new THREE.PointLight( 'red', 1.5, 20);
 directionalLight.castShadow= true
 
-var targetObject = new THREE.Object3D();
-targetObject.position.x +=25
-scene.add(targetObject);
 
-directionalLight.target = targetObject;
 
 document.addEventListener("mousemove", function(event) {
 
@@ -96,20 +116,56 @@ document.addEventListener("mousemove", function(event) {
     var vector = new THREE.Vector3(mouse.x, mouse.y, .5);
     vector.unproject(camera);
     var dir = vector.sub(camera.position).normalize();
-    var distance = - camera.position.z * 2 / dir.z * 1.2 ;
+    var distance = - camera.position.z / dir.z * 3 ;
     var pos = camera.position.clone().add(dir.multiplyScalar(distance));
     //mouseMesh.position.copy(pos);
+    if (object) {
+        object.updateMatrix() 
+        camera.position.x += dir.x / 200
+        camera.position.z -= (dir.y) / 800
+
+
+    
+    }
+    directionalLight.position.copy(new THREE.Vector3(pos.x, pos.y, pos.z + 9));
+    render()
+
+  });
+  var isDistant = false;
+  document.addEventListener("touchmove", function(event) {
+
+    // Update the mouse variable
+    if (!isDistant) {
+        object.position.y += 2
+        object.position.z -= 5
+        directionalLight.distance = 25
+
+        isDistant = true
+    }
+    event.preventDefault();
+    console.log(event.touches[0].clientX)
+    mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
   
-    directionalLight.position.copy(new THREE.Vector3(pos.x, pos.y, pos.z + 2));
+    // Make the sphere follow the mouse
+    var vector = new THREE.Vector3(mouse.x, mouse.y, .5);
+    vector.unproject(camera);
+    var dir = vector.sub(camera.position).normalize();
+    var distance = - camera.position.z / dir.z * 3 ;
+    var pos = camera.position.clone().add(dir.multiplyScalar(distance));
+    //mouseMesh.position.copy(pos);
+    if (object) {
+        object.updateMatrix() 
+        camera.position.x += dir.x / 200
+        camera.position.z -= (dir.y) / 800
+    
+    }
+    directionalLight.position.copy(new THREE.Vector3(pos.x, pos.y, pos.z + 5));
+    render()
+
   });
 camera.add( directionalLight );
 
-
-    // texture
-
- 
-
-    // model
 
     function onProgress( xhr ) {
 
@@ -122,14 +178,17 @@ camera.add( directionalLight );
 
     }
 
-    function onError() {}
+    function onError(e) {console.log(e)}
 
 
    
 
     //
+    const container = document.getElementById( 'three' );
 
-    renderer = new THREE.WebGLRenderer();
+    // create your renderer
+   // scene
+    renderer = new THREE.WebGLRenderer({powerPreference: "high-performance", physicallyCorrectLights: true});
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
@@ -161,17 +220,8 @@ function onDocumentMouseMove( event ) {
 
 }
 
-//
-
-function animate() {
-
-    requestAnimationFrame( animate );
-    render();
-
-}
 
 function render() {
-
 
     
     camera.lookAt( scene.position );

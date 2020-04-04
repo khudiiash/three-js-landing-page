@@ -3,41 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Statue</title>
     <link rel="stylesheet" href="styles/main.css">
-
 </head>
 <body>
     <div id="three"></div>
-
-    <div class="textual-layer">
-        <div class="topnav">
-            <a class="topnav__link" href="#">art</a>
-            <a class="topnav__link" href="#">about</a>
-            <a class="topnav__link" href="#">visit</a>
-            <a class="topnav__link" href="#">shop</a>
-            <a class="topnav__link" href="#">search</a>
-        </div>
-        <div class="bottom-text">
-        <div class="central-text">
-            <div class="central-text-top">The</div>
-            <div class="central-text-middle">THREE GRACES</div>
-            <div class="central-text-bottom"></div>
-        </div>
-            <p>
-                Antonio Canova's statue The Three Graces is a neoclassical sculpture, in marble, of the mythological
-                three charities, doughters of Zeus - identified on some engraivings as, from left to right, Euphrosyne, Anglaea
-                and Thalia, who were said to represent youth/beauty (Thalia), mirth (Euphrosyne), and elegance (Anglaea).
-                The Graces presided over banquets and getherings, to delight the guests of the gods.
-            </p>
+    <div class="main">
+        <div class="textual-layer">
+            <div class="topnav">
+                <a class="topnav__link" href="#">art</a>
+                <a class="topnav__link" href="#">about</a>
+                <a class="topnav__link" href="#">visit</a>
+                <a class="topnav__link" href="#">shop</a>
+                <a class="topnav__link" href="#">search</a>
+            </div>
+            <div class="bottom-text">
+            <div class="central-text">
+                <div class="central-text-top">The</div>
+                <div class="central-text-middle">THREE GRACES</div>
+                <div class="central-text-bottom"></div>
+            </div>
+                <p>
+                    Antonio Canova's statue The Three Graces is a neoclassical sculpture, in marble, of the mythological
+                    three charities, doughters of Zeus - identified on some engraivings as, from left to right, Euphrosyne, Anglaea
+                    and Thalia, who were said to represent youth/beauty (Thalia), mirth (Euphrosyne), and elegance (Anglaea).
+                    The Graces presided over banquets and getherings, to delight the guests of the gods.
+                </p>
+            </div>
+            
         </div>
     </div>
-   
+    <div class="vail" id='vail'>
+        <div class="loader">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
     <script src="scripts//three.js"></script>
-    <script src="scripts/OBJLoader.js"></script>
-    <script src="scripts/MTLLoader.js"></script>
-
-
+    <script src="scripts/GLTFLoader.js"></script>
+    <script src="scripts/DRACOLoader.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>
